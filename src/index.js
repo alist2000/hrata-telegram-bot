@@ -561,25 +561,57 @@ async function handleQuestion(user, chatId, text, env) {
 
   await tgAction(env, chatId, "typing");
 
-  // Ask AI with retry
-  const answer = await askAI(question, env);
+  // Ask AI with robust timeout and fallback
+  const result = await askAI(question, env);
 
-  // Save
-  await incrementDailyUsage(user.id, env);
-  await saveQuestion(user.id, question, answer, env);
+  if (result.success) {
+    // Only consume quota if we successfully got an answer
+    await incrementDailyUsage(user.id, env);
+    await saveQuestion(user.id, question, result.text, env);
 
-  const remaining = limit - (used + 1);
-  await tgSend(env, chatId, `${answer}\n\n${remaining} سوال از ${limit} سوال امروز باقی مانده است.`);
+    const remaining = limit - (used + 1);
+    await tgSend(env, chatId, `${result.text}\n\n${remaining} سوال از ${limit} سوال امروز باقی مانده است.`);
+  } else {
+    // Show error gracefully without consuming quota
+    await tgSend(env, chatId, result.text);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
-//  AI PROVIDERS (with retry)
+//  AI PROVIDERS (with timeout & fallback)
 // ═══════════════════════════════════════════════════════════
-async function askAI(question, env) {
-  if (env.GROK_API_KEY) {
-    return await askGrok(question, env);
+async function fetchWithTimeout(url, options = {}) {
+  const { timeout = 8000 } = options; // 8 seconds default timeout
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const res = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(id);
+    return res;
+  } catch (e) {
+    clearTimeout(id);
+    throw e;
   }
-  return await askGemini(question, env);
+}
+
+async function askAI(question, env) {
+  let answer = null;
+
+  // 1. Try Grok if available
+  if (env.GROK_API_KEY) {
+    answer = await askGrok(question, env);
+    if (answer) return { success: true, text: answer };
+  }
+
+  // 2. Try Gemini
+  answer = await askGemini(question, env);
+  if (answer) return { success: true, text: answer };
+
+  // 3. If all fail, return graceful fallback
+  return {
+    success: false,
+    text: "متاسفانه تمامی سرویس‌های هوش مصنوعی در حال حاضر بیش از حد شلوغ هستند. لطفا چند دقیقه دیگر مجددا تلاش کنید.",
+  };
 }
 
 async function askGemini(question, env) {
@@ -591,13 +623,14 @@ async function askGemini(question, env) {
     generationConfig: { maxOutputTokens: 600, temperature: 0.7 },
   };
 
-  // Retry up to 3 times on 503
-  for (let attempt = 1; attempt <= 3; attempt++) {
+  // Max 2 attempts, quick backoff to avoid Cloudflare 30s limit
+  for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      const res = await fetch(url, {
+      const res = await fetchWithTimeout(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        timeout: 8000
       });
 
       const data = await res.json();
@@ -608,31 +641,27 @@ async function askGemini(question, env) {
 
       if (data.error) {
         console.error(`Gemini attempt ${attempt} error:`, JSON.stringify(data.error));
-        // Retry on 503 (overloaded)
-        if (data.error.code === 503 && attempt < 3) {
-          await sleep(1000 * attempt); // 1s, 2s backoff
+        // Retry on 503 or 429
+        if ((data.error.code === 503 || data.error.code === 429) && attempt === 1) {
+          await sleep(500); // Only sleep 0.5s
           continue;
-        }
-        // 429 rate limit
-        if (data.error.code === 429) {
-          return "سرویس هوش مصنوعی در حال حاضر ترافیک بالایی دارد. لطفا یک دقیقه بعد مجددا تلاش کنید.";
         }
       }
     } catch (err) {
       console.error(`Gemini attempt ${attempt} exception:`, err);
-      if (attempt < 3) {
-        await sleep(1000 * attempt);
+      if (attempt === 1) {
+        await sleep(500);
         continue;
       }
     }
   }
 
-  return "متاسفانه در دریافت پاسخ مشکلی رخ داد. لطفا چند لحظه بعد دوباره امتحان کنید.";
+  return null;
 }
 
 async function askGrok(question, env) {
   try {
-    const res = await fetch("https://api.x.ai/v1/chat/completions", {
+    const res = await fetchWithTimeout("https://api.x.ai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -647,16 +676,17 @@ async function askGrok(question, env) {
         temperature: 0.7,
         max_tokens: 600,
       }),
+      timeout: 8000
     });
     const data = await res.json();
     if (data.choices && data.choices[0]?.message?.content) {
       return data.choices[0].message.content.trim();
     }
     console.error("Grok error:", JSON.stringify(data));
-    return "خطا در پردازش توسط گروک. لطفا دقایقی دیگر امتحان کنید.";
+    return null;
   } catch (e) {
     console.error("Grok exception:", e);
-    return "ارتباط با سرویس گروک برقرار نشد.";
+    return null;
   }
 }
 
