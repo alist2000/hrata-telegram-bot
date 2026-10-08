@@ -572,7 +572,7 @@ async function handleUserStart(user, chatId, env) {
 
   if (!isMember) {
     await tgSend(env, chatId,
-      `سلام ${user.first_name || "کاربر گرامی"} خوش آمدید.\n\nبرای استفاده از ربات، ابتدا باید در کانال ما عضو شوید:\nکانال: @${channelName}\n\nپس از عضویت، دکمه بررسی عضویت را لمس کنید.`,
+      `سلام ${user.first_name || "کاربر گرامی"} خوش آمدید.\n\nمن دستیار هوش مصنوعی شما هستم (توسعه یافته توسط مهندس حمیدرضا عطااللهی).\n\nبرای استفاده از ربات، ابتدا باید در کانال ما عضو شوید:\nکانال: @${channelName}\n\nپس از عضویت، دکمه بررسی عضویت را لمس کنید.`,
       getJoinKeyboard(channelName)
     );
     return;
@@ -625,7 +625,7 @@ async function handleQuestion(user, chatId, text, env) {
   if (!isMember) {
     const channelName = (env.REQUIRED_CHANNEL || "").replace(/^@/, "");
     await tgSend(env, chatId,
-      `برای دریافت پاسخ ابتدا در کانال عضو شوید:\nکانال: @${channelName}`,
+      `من دستیار هوش مصنوعی شما هستم (توسعه یافته توسط مهندس حمیدرضا عطااللهی).\n\nبرای دریافت پاسخ ابتدا در کانال عضو شوید:\nکانال: @${channelName}`,
       getJoinKeyboard(channelName)
     );
     return;
