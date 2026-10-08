@@ -151,6 +151,26 @@ async function handleMessage(message, env, ctx) {
 
   // ─── Admin commands ──────────────────────────────────
   if (userIsManager) {
+    const broadcastStateKey = 'broadcast_state_' + user.id;
+    const broadcastRow = await env.DB.prepare("SELECT value FROM bot_settings WHERE key = ?").bind(broadcastStateKey).first();
+    if (broadcastRow && broadcastRow.value === 'waiting') {
+      const textForCancel = (message.text || "").trim();
+      if (textForCancel === "/cancel") {
+        await env.DB.prepare("DELETE FROM bot_settings WHERE key = ?").bind(broadcastStateKey).run();
+        await tgSend(env, chatId, "ارسال پیام همگانی لغو شد.");
+        return;
+      }
+      // Process broadcast
+      await env.DB.prepare("DELETE FROM bot_settings WHERE key = ?").bind(broadcastStateKey).run();
+      await tgSend(env, chatId, "⏳ پیام شما دریافت شد و در حال ارسال به تمامی کاربران است. پس از پایان، نتیجه به شما گزارش خواهد شد.");
+      if (ctx && ctx.waitUntil) {
+        ctx.waitUntil(broadcastMessage(env, chatId, message.message_id, user.id));
+      } else {
+        broadcastMessage(env, chatId, message.message_id, user.id).catch(console.error);
+      }
+      return;
+    }
+
     // /start for managers: show role picker
     if (text === "/start") {
       await tgSend(env, chatId,
