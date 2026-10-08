@@ -29,6 +29,7 @@ export default {
     }
 
     try {
+      env.DB = env.DB || env.hrata_bot_db;
       const update = await request.json();
       await handleTelegramUpdate(update, env);
       return new Response("OK", { status: 200 });
