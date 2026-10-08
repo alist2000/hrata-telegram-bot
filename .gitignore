@@ -1,0 +1,20 @@
+# Telegram AI Bot
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.venv/
+
+# Environment variables
+.env
+
+# Database
+bot_data.db
+
+# IDE
+.vscode/
+.idea/
