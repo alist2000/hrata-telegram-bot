@@ -1,26 +1,22 @@
 /**
  * Cloudflare Worker: Telegram AI Bot
- * Powered by:
- *  - Cloudflare Workers (Serverless, 100k requests/day free)
- *  - Cloudflare D1 (Serverless SQLite DB, 5M reads/day free)
- *  - Google Gemini API (Free tier)
- *  - Telegram Webhook
+ * Persian by default
+ * Powered by Gemini & Cloudflare D1
  */
 
-const SYSTEM_PROMPT = `You are a helpful AI assistant in a Telegram bot.
-Rules:
-- Keep answers SHORT and concise (max 2-3 paragraphs).
-- Be friendly and helpful.
-- If a question is too complex, give a brief summary and suggest the user research further.
-- Do NOT answer anything illegal, harmful, or inappropriate.
-- Answer in the SAME language the user asks in.
+const SYSTEM_PROMPT = `شما یک دستیار هوش مصنوعی مودب، مفید و دقیق در تلگرام هستید.
+قوانین:
+- پاسخ‌ها را به زبان فارسی روان، کوتاه و دقیق ارائه بده. حداکثر ۲ تا ۳ بند.
+- از به کار بردن علامت‌های گیومه غیرضروری و خط فاصله طولانی خودداری کن.
+- اگر سوال نیاز به تحقیق بیشتر دارد، خلاصه‌ای بده و راهنمایی کن.
+- پاسخ محتوای نامناسب یا خطرناک را نده.
 `;
 
 export default {
   async fetch(request, env, ctx) {
     if (request.method === "GET") {
       return new Response("Telegram AI Bot is running smoothly on Cloudflare Workers!", {
-        headers: { "content-type": "text/plain" },
+        headers: { "content-type": "text/plain; charset=utf-8" },
       });
     }
 
@@ -56,7 +52,7 @@ async function handleTelegramUpdate(update, env) {
 }
 
 /**
- * Handle user messages & commands
+ * Handle user messages & commands in Persian
  */
 async function handleMessage(message, env) {
   const user = message.from;
@@ -68,7 +64,7 @@ async function handleMessage(message, env) {
 
   // 2. Check if blocked
   if (await isUserBlocked(user.id, env)) {
-    await sendTelegramMessage(env, chatId, "🚫 Your access has been suspended. Contact an admin.");
+    await sendTelegramMessage(env, chatId, "دسترسی شما به ربات مسدود شده است. لطفا با پشتیبانی در ارتباط باشید.");
     return;
   }
 
@@ -76,10 +72,11 @@ async function handleMessage(message, env) {
   if (text === "/start") {
     const isMember = await checkChannelMembership(user.id, env);
     if (!isMember) {
+      const channelName = (env.REQUIRED_CHANNEL || "").replace(/^@/, "");
       await sendTelegramMessage(
         env,
         chatId,
-        `👋 Welcome **${escapeMarkdown(user.first_name)}**!\n\nTo use this bot, you must first join our channel.\nAfter joining, tap **"I've Joined"** to verify.\n\n📢 Channel: @${env.REQUIRED_CHANNEL}`,
+        `سلام ${escapeMarkdown(user.first_name || "کاربر گرامی")} خوش آمدید.\n\nبرای استفاده از ربات، ابتدا باید در کانال ما عضو شوید:\nکانال: @${channelName}\n\nپس از عضویت، دکمه بررسی عضویت را لمس کنید.`,
         getJoinKeyboard(env.REQUIRED_CHANNEL)
       );
       return;
@@ -92,7 +89,7 @@ async function handleMessage(message, env) {
     await sendTelegramMessage(
       env,
       chatId,
-      `👋 Welcome back **${escapeMarkdown(user.first_name)}**!\n\n🤖 I'm your AI assistant. Just send me any question!\n\n📊 You have **${remaining}/${limit}** questions remaining today.\n\nCommands:\n/ask <question> — Ask a question\n/remaining — Check remaining questions\n/history — View your recent questions\n/help — Show help`
+      `سلام ${escapeMarkdown(user.first_name || "عزیز")} خوش آمدید.\n\nمن دستیار هوش مصنوعی شما هستم. هر سوالی دارید بپرسید تا پاسخ دهم.\n\nسهمیه امروز شما: ${remaining} از ${limit} سوال باقی‌مانده است.\n\nراهنما:\n/ask <سوال> برای پرسیدن سوال\n/remaining مشاهده تعداد سوال باقی‌مانده\n/history مشاهده سوالات اخیر\n/help راهنمای دستورات`
     );
     return;
   }
@@ -100,10 +97,11 @@ async function handleMessage(message, env) {
   // 4. Command: /help
   if (text === "/help") {
     const limit = parseInt(env.DAILY_QUESTION_LIMIT || "5", 10);
+    const channelName = (env.REQUIRED_CHANNEL || "").replace(/^@/, "");
     await sendTelegramMessage(
       env,
       chatId,
-      `🤖 **AI Bot Help**\n\n**How to use:**\nSimply send your question as a message!\n\n**Commands:**\n/start — Start bot\n/ask <question> — Ask question\n/remaining — Check remaining queries\n/history — View recent questions\n/help — Show help\n\n**Limits:**\n• ${limit} questions per day\n• Must be a member of @${env.REQUIRED_CHANNEL}`
+      `راهنمای ربات هوش مصنوعی:\n\nکافی است متن سوال خود را همینجا ارسال کنید.\n\nدستورات:\n/start شروع مجدد ربات\n/remaining مشاهده باقیمانده سهمیه روزانه\n/history تاریخچه آخرین سوالات شما\n/help نمایش این راهنما\n\nمحدودیت‌ها:\nروزانه ${limit} سوال برای هر کاربر\nعضویت اجباری در کانال @${channelName}`
     );
     return;
   }
@@ -116,7 +114,7 @@ async function handleMessage(message, env) {
     await sendTelegramMessage(
       env,
       chatId,
-      `📊 **Daily Question Limit**\n\nUsed: ${used}/${limit}\nRemaining: **${remaining}**\n\n${remaining > 0 ? "💡 Limits reset at midnight." : "⏰ Come back tomorrow for more questions!"}`
+      `گزارش مصرف امروز شما:\nتعداد استفاده شده: ${used} از ${limit}\nتعداد باقی‌مانده: ${remaining} سوال\n\nسهمیه هر شب در ساعت ۲۴ بازنشانی می‌شود.`
     );
     return;
   }
@@ -125,15 +123,15 @@ async function handleMessage(message, env) {
   if (text === "/history") {
     const history = await getUserHistory(user.id, env, 5);
     if (!history || history.length === 0) {
-      await sendTelegramMessage(env, chatId, "📭 You haven't asked any questions yet!");
+      await sendTelegramMessage(env, chatId, "شما هنوز هیچ سوالی نپرسیده‌اید.");
       return;
     }
 
-    let out = "📜 **Your Recent Questions:**\n\n";
+    let out = "آخرین پرسش‌های شما:\n\n";
     history.forEach((item, index) => {
       const q = item.question.length > 80 ? item.question.substring(0, 80) + "..." : item.question;
       const a = item.answer.length > 100 ? item.answer.substring(0, 100) + "..." : item.answer;
-      out += `**${index + 1}. Q:** ${escapeMarkdown(q)}\n**A:** ${escapeMarkdown(a)}\n\n`;
+      out += `${index + 1}. پرسش: ${escapeMarkdown(q)}\nپاسخ: ${escapeMarkdown(a)}\n\n`;
     });
     await sendTelegramMessage(env, chatId, out);
     return;
@@ -142,10 +140,11 @@ async function handleMessage(message, env) {
   // 7. Channel membership verification check
   const isMember = await checkChannelMembership(user.id, env);
   if (!isMember) {
+    const channelName = (env.REQUIRED_CHANNEL || "").replace(/^@/, "");
     await sendTelegramMessage(
       env,
       chatId,
-      `⚠️ You need to join our channel first!\n\nJoin @${env.REQUIRED_CHANNEL} and then verify:`,
+      `برای دریافت پاسخ ابتدا باید در کانال عضو شوید:\nکانال: @${channelName}`,
       getJoinKeyboard(env.REQUIRED_CHANNEL)
     );
     return;
@@ -158,7 +157,7 @@ async function handleMessage(message, env) {
     await sendTelegramMessage(
       env,
       chatId,
-      `⏳ You've reached your daily limit of **${limit} questions**.\n\nCome back tomorrow! Limits reset daily. 🌙`
+      `سهمیه ۵ سوال امروز شما به پایان رسیده است. فردا مجددا می‌توانید سوالات جدید خود را مطرح کنید.`
     );
     return;
   }
@@ -169,15 +168,15 @@ async function handleMessage(message, env) {
     question = question.substring(4).trim();
   }
   if (!question || question.length < 2) {
-    await sendTelegramMessage(env, chatId, "❓ Please ask a valid question.");
+    await sendTelegramMessage(env, chatId, "لطفا سوال کامل‌تری بپرسید.");
     return;
   }
 
   // Send typing indicator
   await sendChatAction(env, chatId, "typing");
 
-  // 10. Call Gemini AI
-  const answer = await askGemini(question, env);
+  // 10. Call AI
+  const answer = await askAI(question, env);
 
   // 11. Save to D1 SQLite database
   await incrementDailyUsage(user.id, env);
@@ -185,7 +184,7 @@ async function handleMessage(message, env) {
 
   // 12. Send reply
   const remaining = limit - (used + 1);
-  const reply = `${answer}\n\n---\n📊 _${remaining}/${limit} questions remaining today_`;
+  const reply = `${answer}\n\n${remaining} سوال از ${limit} سوال امروز باقی مانده است.`;
   await sendTelegramMessage(env, chatId, reply);
 }
 
@@ -200,7 +199,7 @@ async function handleCallbackQuery(query, env) {
   const isMember = await checkChannelMembership(user.id, env);
 
   if (isMember) {
-    await answerCallbackQuery(env, query.id, "✅ Membership confirmed!", false);
+    await answerCallbackQuery(env, query.id, "عضویت شما با موفقیت تایید شد", false);
     const limit = parseInt(env.DAILY_QUESTION_LIMIT || "5", 10);
     const used = await getDailyUsage(user.id, env);
     const remaining = Math.max(0, limit - used);
@@ -209,10 +208,10 @@ async function handleCallbackQuery(query, env) {
       env,
       chatId,
       messageId,
-      `✅ **Membership verified!** Welcome, ${escapeMarkdown(user.first_name)}!\n\n🤖 You can now ask me questions.\n📊 You have **${remaining}/${limit}** questions today.\n\nJust send me any question!`
+      `عضویت شما تایید شد ${escapeMarkdown(user.first_name || "")} عزیز.\nاکنون می‌توانید سوالات خود را ارسال کنید.\nباقی‌مانده امروز: ${remaining} از ${limit} سوال.`
     );
   } else {
-    await answerCallbackQuery(env, query.id, "❌ You haven't joined the channel yet!", true);
+    await answerCallbackQuery(env, query.id, "شما هنوز در کانال عضو نشده‌اید!", true);
   }
 }
 
@@ -220,7 +219,7 @@ async function handleCallbackQuery(query, env) {
  * Channel Membership Check via Telegram API
  */
 async function checkChannelMembership(userId, env) {
-  const channel = env.REQUIRED_CHANNEL.replace(/^@/, "");
+  const channel = (env.REQUIRED_CHANNEL || "").replace(/^@/, "");
   const channelId = channel.startsWith("-") ? channel : `@${channel}`;
 
   const res = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/getChatMember`, {
@@ -241,22 +240,40 @@ async function checkChannelMembership(userId, env) {
   const status = data.result.status;
   const isMember = ["member", "administrator", "creator"].includes(status);
 
-  // Cache in D1
   if (env.DB) {
-    await env.DB.prepare(
-      "UPDATE users SET is_channel_member = ? WHERE user_id = ?"
-    ).bind(isMember ? 1 : 0, userId).run();
+    try {
+      await env.DB.prepare(
+        "UPDATE users SET is_channel_member = ? WHERE user_id = ?"
+      ).bind(isMember ? 1 : 0, userId).run();
+    } catch (e) {
+      console.warn("DB update failed:", e);
+    }
   }
 
   return isMember;
 }
 
 /**
- * Gemini AI API Request
+ * AI Request: Supports Gemini (default) or Grok / OpenAI-compatible API
+ */
+async function askAI(question, env) {
+  // If GROK / xAI API Key is configured, use Grok
+  if (env.GROK_API_KEY) {
+    return await askGrok(question, env);
+  }
+
+  // Otherwise, use Gemini 3.8 Flash
+  return await askGemini(question, env);
+}
+
+/**
+ * Google Gemini API Handler
  */
 async function askGemini(question, env) {
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${env.GEMINI_API_KEY}`;
+    const model = env.GEMINI_MODEL || "gemini-3.8-flash";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.GEMINI_API_KEY}`;
+    
     const payload = {
       systemInstruction: {
         parts: [{ text: SYSTEM_PROMPT }],
@@ -268,7 +285,7 @@ async function askGemini(question, env) {
         },
       ],
       generationConfig: {
-        maxOutputTokens: 500,
+        maxOutputTokens: 600,
         temperature: 0.7,
       },
     };
@@ -285,14 +302,48 @@ async function askGemini(question, env) {
     }
 
     if (data.error) {
-      console.error("Gemini error payload:", data.error);
-      return "⏳ The AI service is currently busy. Please try again shortly.";
+      console.error("Gemini API error:", JSON.stringify(data.error));
+      return "متاسفانه در دریافت پاسخ خطایی رخ داد. لطفا چند لحظه بعد دوباره امتحان کنید.";
     }
 
-    return "❌ Sorry, I could not generate an answer right now.";
+    return "پاسخی برای این سوال دریافت نشد. لطفا پرسش دیگری مطرح فرمایید.";
   } catch (err) {
     console.error("Gemini fetch exception:", err);
-    return "❌ Failed to reach the AI service.";
+    return "ارتباط با سرویس هوش مصنوعی برقرار نشد. لطفا بعدا تلاش کنید.";
+  }
+}
+
+/**
+ * Grok (xAI) API Handler
+ */
+async function askGrok(question, env) {
+  try {
+    const res = await fetch("https://api.x.ai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${env.GROK_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: env.GROK_MODEL || "grok-2-latest",
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: question },
+        ],
+        temperature: 0.7,
+        max_tokens: 600,
+      }),
+    });
+
+    const data = await res.json();
+    if (data.choices && data.choices[0]?.message?.content) {
+      return data.choices[0].message.content.trim();
+    }
+    console.error("Grok error:", data);
+    return "خطا در پردازش توسط گروک. لطفا دقایقی دیگر امتحان کنید.";
+  } catch (e) {
+    console.error("Grok fetch exception:", e);
+    return "ارتباط با سرویس گروک برقرار نشد.";
   }
 }
 
@@ -302,61 +353,85 @@ async function askGemini(question, env) {
 async function upsertUser(user, env) {
   if (!env.DB) return;
   const now = new Date().toISOString();
-  await env.DB.prepare(`
-    INSERT INTO users (user_id, username, first_name, last_name, first_seen, last_active)
-    VALUES (?, ?, ?, ?, ?, ?)
-    ON CONFLICT(user_id) DO UPDATE SET
-      username = excluded.username,
-      first_name = excluded.first_name,
-      last_name = excluded.last_name,
-      last_active = excluded.last_active
-  `).bind(user.id, user.username || "", user.first_name || "", user.last_name || "", now, now).run();
+  try {
+    await env.DB.prepare(`
+      INSERT INTO users (user_id, username, first_name, last_name, first_seen, last_active)
+      VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT(user_id) DO UPDATE SET
+        username = excluded.username,
+        first_name = excluded.first_name,
+        last_name = excluded.last_name,
+        last_active = excluded.last_active
+    `).bind(user.id, user.username || "", user.first_name || "", user.last_name || "", now, now).run();
+  } catch (e) {
+    console.error("upsertUser error:", e);
+  }
 }
 
 async function isUserBlocked(userId, env) {
   if (!env.DB) return false;
-  const row = await env.DB.prepare("SELECT is_blocked FROM users WHERE user_id = ?").bind(userId).first();
-  return Boolean(row?.is_blocked);
+  try {
+    const row = await env.DB.prepare("SELECT is_blocked FROM users WHERE user_id = ?").bind(userId).first();
+    return Boolean(row?.is_blocked);
+  } catch (e) {
+    return false;
+  }
 }
 
 async function getDailyUsage(userId, env) {
   if (!env.DB) return 0;
   const today = new Date().toISOString().split("T")[0];
-  const row = await env.DB.prepare(
-    "SELECT question_count FROM daily_usage WHERE user_id = ? AND usage_date = ?"
-  ).bind(userId, today).first();
-  return row ? row.question_count : 0;
+  try {
+    const row = await env.DB.prepare(
+      "SELECT question_count FROM daily_usage WHERE user_id = ? AND usage_date = ?"
+    ).bind(userId, today).first();
+    return row ? row.question_count : 0;
+  } catch (e) {
+    return 0;
+  }
 }
 
 async function incrementDailyUsage(userId, env) {
   if (!env.DB) return;
   const today = new Date().toISOString().split("T")[0];
-  await env.DB.prepare(`
-    INSERT INTO daily_usage (user_id, usage_date, question_count)
-    VALUES (?, ?, 1)
-    ON CONFLICT(user_id, usage_date) DO UPDATE SET
-      question_count = question_count + 1
-  `).bind(userId, today).run();
+  try {
+    await env.DB.prepare(`
+      INSERT INTO daily_usage (user_id, usage_date, question_count)
+      VALUES (?, ?, 1)
+      ON CONFLICT(user_id, usage_date) DO UPDATE SET
+        question_count = question_count + 1
+    `).bind(userId, today).run();
+  } catch (e) {
+    console.error("incrementDailyUsage error:", e);
+  }
 }
 
 async function saveQuestion(userId, question, answer, env) {
   if (!env.DB) return;
   const now = new Date().toISOString();
-  await env.DB.prepare(`
-    INSERT INTO questions (user_id, question, answer, asked_at, tokens_used)
-    VALUES (?, ?, ?, ?, 0)
-  `).bind(userId, question, answer, now).run();
+  try {
+    await env.DB.prepare(`
+      INSERT INTO questions (user_id, question, answer, asked_at, tokens_used)
+      VALUES (?, ?, ?, ?, 0)
+    `).bind(userId, question, answer, now).run();
+  } catch (e) {
+    console.error("saveQuestion error:", e);
+  }
 }
 
 async function getUserHistory(userId, env, limit = 5) {
   if (!env.DB) return [];
-  const { results } = await env.DB.prepare(`
-    SELECT question, answer, asked_at FROM questions
-    WHERE user_id = ?
-    ORDER BY asked_at DESC
-    LIMIT ?
-  `).bind(userId, limit).all();
-  return results || [];
+  try {
+    const { results } = await env.DB.prepare(`
+      SELECT question, answer, asked_at FROM questions
+      WHERE user_id = ?
+      ORDER BY asked_at DESC
+      LIMIT ?
+    `).bind(userId, limit).all();
+    return results || [];
+  } catch (e) {
+    return [];
+  }
 }
 
 /**
@@ -366,7 +441,6 @@ async function sendTelegramMessage(env, chatId, text, replyMarkup = null) {
   const body = {
     chat_id: chatId,
     text: text,
-    parse_mode: "Markdown",
   };
   if (replyMarkup) {
     body.reply_markup = replyMarkup;
@@ -384,7 +458,6 @@ async function editTelegramMessage(env, chatId, messageId, text, replyMarkup = n
     chat_id: chatId,
     message_id: messageId,
     text: text,
-    parse_mode: "Markdown",
   };
   if (replyMarkup) {
     body.reply_markup = replyMarkup;
@@ -414,16 +487,16 @@ async function answerCallbackQuery(env, queryId, text, showAlert = false) {
 }
 
 function getJoinKeyboard(channel) {
-  const clean = channel.replace(/^@/, "");
+  const clean = (channel || "").replace(/^@/, "");
   return {
     inline_keyboard: [
-      [{ text: "📢 Join Channel", url: `https://t.me/${clean}` }],
-      [{ text: "✅ I've Joined — Verify", callback_data: "verify_membership" }],
+      [{ text: "عضویت در کانال", url: `https://t.me/${clean}` }],
+      [{ text: "عضو شدم، بررسی کن", callback_data: "verify_membership" }],
     ],
   };
 }
 
 function escapeMarkdown(text) {
   if (!text) return "";
-  return text.replace(/([_*[\]()~`>#+-=|{}.!])/g, "\\$1");
+  return text.replace(/([_*[\]()~`>#+=|{}!])/g, "\\$1");
 }
