@@ -27,11 +27,18 @@ export default {
     try {
       env.DB = env.DB || env.hrata_bot_db;
       const update = await request.json();
-      await handleTelegramUpdate(update, env);
+      
+      // Process update in background to prevent Telegram Webhook Read Timeout
+      if (ctx && ctx.waitUntil) {
+        ctx.waitUntil(handleTelegramUpdate(update, env));
+      } else {
+        await handleTelegramUpdate(update, env);
+      }
+      
       return new Response("OK", { status: 200 });
     } catch (err) {
       console.error("Worker error:", err);
-      return new Response("Error processing update", { status: 200 });
+      return new Response("OK", { status: 200 });
     }
   },
 };
@@ -438,19 +445,28 @@ async function getUserHistory(userId, env, limit = 5) {
  * Telegram API Helpers
  */
 async function sendTelegramMessage(env, chatId, text, replyMarkup = null) {
-  const body = {
-    chat_id: chatId,
-    text: text,
-  };
-  if (replyMarkup) {
-    body.reply_markup = replyMarkup;
-  }
+  try {
+    const body = {
+      chat_id: chatId,
+      text: text,
+    };
+    if (replyMarkup) {
+      body.reply_markup = replyMarkup;
+    }
 
-  await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+    const res = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const resData = await res.json();
+    if (!resData.ok) {
+      console.error("sendTelegramMessage failed:", JSON.stringify(resData));
+    }
+    return resData;
+  } catch (err) {
+    console.error("sendTelegramMessage exception:", err);
+  }
 }
 
 async function editTelegramMessage(env, chatId, messageId, text, replyMarkup = null) {
