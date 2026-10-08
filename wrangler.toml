@@ -1,0 +1,10 @@
+name = "hrata-telegram-bot"
+main = "src/index.js"
+compatibility_date = "2024-04-01"
+
+# Cloudflare D1 Database binding
+# You will get the database_id after running: npx wrangler d1 create hrata-bot-db
+[[d1_databases]]
+binding = "DB"
+database_name = "hrata-bot-db"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"

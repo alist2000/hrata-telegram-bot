@@ -1,0 +1,14 @@
+{
+  "name": "hrata-telegram-bot-cf",
+  "version": "1.0.0",
+  "description": "Telegram AI Bot on Cloudflare Workers with D1 Database and Gemini",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "wrangler": "^3.111.0"
+  }
+}
