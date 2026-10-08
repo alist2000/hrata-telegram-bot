@@ -16,8 +16,9 @@ async function getSystemPrompt(env) {
   let prompt = `شما یک دستیار هوش مصنوعی مودب، مفید و متخصص در تلگرام هستید که به سوالات کامپیوتری، علمی و عمومی پاسخ می‌دهید.
 قوانین:
 - پاسخ‌ها را به زبان فارسی روان و طبیعی ارائه بده.
-- به هیچ عنوان پاسخ کوتاه نده. جواب‌ها باید کاملاً مفصل، جامع و با جزئیات دقیق (شامل توضیحات کامل، مثال و مراحل در صورت نیاز) بیان شوند.
-- مستقیم برو سر اصل مطلب و از کلمات اضافه در ابتدای متن استفاده نکن.`;
+- به هیچ عنوان پاسخ کوتاه نده. جواب‌ها باید کاملاً مفصل، جامع و با جزئیات دقیق بیان شوند.
+- مستقیم برو سر اصل مطلب و از کلمات اضافه در ابتدای متن استفاده نکن.
+- بسیار مهم: به هیچ وجه از فرمت‌های مارک‌داون (Markdown) استفاده نکن! (از نوشتن ستاره ** برای بولد کردن، # برای تیتر یا --- استفاده نکن). تمام متن باید به صورت ساده (Plain Text) باشد. برای لیست‌ها فقط از ایموجی (مثل 🔹 یا ✅) استفاده کن.`;
 
   if (env.DB) {
     try {
@@ -634,19 +635,17 @@ async function fetchWithTimeout(url, options = {}) {
 }
 
 async function askAI(question, env) {
-  let answer = null;
+  let result = null;
 
-  // 1. Try Grok if available
   if (env.GROK_API_KEY) {
-    answer = await askGrok(question, env);
-    if (answer) return { success: true, text: answer };
+    result = await askGrok(question, env);
+    if (result && result.success) return result;
   }
 
-  // 2. Try Gemini
-  answer = await askGemini(question, env);
-  if (answer) return { success: true, text: answer };
+  result = await askGemini(question, env);
+  if (result && result.success) return result;
+  if (result && !result.success && result.text) return result;
 
-  // 3. If all fail, return graceful fallback
   return {
     success: false,
     text: "متاسفانه تمامی سرویس‌های هوش مصنوعی در حال حاضر بیش از حد شلوغ هستند. لطفا چند دقیقه دیگر مجددا تلاش کنید.",
@@ -679,7 +678,7 @@ async function askGemini(question, env) {
       const data = await res.json();
 
       if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-        return data.candidates[0].content.parts[0].text.trim();
+        return { success: true, text: data.candidates[0].content.parts[0].text.trim() };
       }
 
       if (data.error) {
@@ -689,9 +688,9 @@ async function askGemini(question, env) {
           await sleep(500); // Only sleep 0.5s
           continue;
         }
-        // If it's a 400 (Bad Request), 403 (Invalid API Key), or 404 (Model Not Found), return the exact error
+        // If it's a 400 (Bad Request), 403 (Invalid API Key), or 404 (Model Not Found), return the exact error but as failure
         if (data.error.code === 400 || data.error.code === 403 || data.error.code === 404) {
-           return `خطای پیکربندی هوش مصنوعی (${data.error.code}): ${data.error.message}\n\nلطفا API Key یا نام مدل را بررسی کنید.`;
+           return { success: false, text: `خطای پیکربندی هوش مصنوعی (${data.error.code}): ${data.error.message}\n\nلطفا API Key یا نام مدل را بررسی کنید.` };
         }
       }
     } catch (err) {
@@ -703,7 +702,7 @@ async function askGemini(question, env) {
     }
   }
 
-  return null;
+  return { success: false, text: null };
 }
 
 async function askGrok(question, env) {
@@ -728,13 +727,13 @@ async function askGrok(question, env) {
     });
     const data = await res.json();
     if (data.choices && data.choices[0]?.message?.content) {
-      return data.choices[0].message.content.trim();
+      return { success: true, text: data.choices[0].message.content.trim() };
     }
     console.error("Grok error:", JSON.stringify(data));
-    return null;
+    return { success: false, text: null };
   } catch (e) {
     console.error("Grok exception:", e);
-    return null;
+    return { success: false, text: null };
   }
 }
 
