@@ -13,17 +13,17 @@
  */
 
 async function getSystemPrompt(env) {
-  let prompt = `شما یک دستیار هوش مصنوعی مودب، مفید و متخصص در تلگرام هستید.
+  let prompt = `شما یک دستیار هوش مصنوعی مودب، مفید و متخصص در تلگرام هستید که به سوالات کامپیوتری، علمی و عمومی پاسخ می‌دهید.
 قوانین:
-- پاسخ‌ها را به زبان فارسی روان، طبیعی و بدون کلمات اضافه (مثل خلاصه، Summary و ...) در ابتدای متن ارائه بده.
-- اگر کاربر سوال توضیحی پرسید، می‌توانید پاسخ را جامع و در حد یک یا چند پاراگراف طولانی بنویسید (محدودیت کلمات برداشته شده است).
-- مستقیم برو سر اصل مطلب و از نشانه‌های گیومه غیرضروری و خط فاصله طولانی استفاده نکن.`;
+- پاسخ‌ها را به زبان فارسی روان و طبیعی ارائه بده.
+- به هیچ عنوان پاسخ کوتاه نده. جواب‌ها باید کاملاً مفصل، جامع و با جزئیات دقیق (شامل توضیحات کامل، مثال و مراحل در صورت نیاز) بیان شوند.
+- مستقیم برو سر اصل مطلب و از کلمات اضافه در ابتدای متن استفاده نکن.`;
 
   if (env.DB) {
     try {
       const row = await env.DB.prepare("SELECT value FROM bot_settings WHERE key = 'course_context'").first();
       if (row && row.value) {
-        prompt += `\n\nهمچنین، اطلاعات زیر در مورد سازنده این ربات و دوره‌های آموزشی او است:\n${row.value}\nاگر سوال کاربر به برنامه‌نویسی، آموزش یا این دوره‌ها مرتبط بود، با ظرافت این دوره‌ها را به کاربر معرفی و پیشنهاد کن.`;
+        prompt += `\n\nهمچنین، اطلاعات زیر در مورد سازنده این ربات و دوره‌های آموزشی او است:\n${row.value}\nاگر سوال کاربر به برنامه‌نویسی، آموزش یا این دوره‌ها مرتبط بود، با ظرافت و توضیحات کافی این دوره‌ها را به کاربر معرفی و پیشنهاد کن.`;
       }
     } catch (e) {
       // ignore
@@ -663,7 +663,7 @@ async function askGemini(question, env) {
   const payload = {
     systemInstruction: { parts: [{ text: systemInstructionText }] },
     contents: [{ role: "user", parts: [{ text: question }] }],
-    generationConfig: { maxOutputTokens: 1024, temperature: 0.7 },
+    generationConfig: { maxOutputTokens: 4096, temperature: 0.7 },
   };
 
   // Max 2 attempts, quick backoff to avoid Cloudflare 30s limit
@@ -722,7 +722,7 @@ async function askGrok(question, env) {
           { role: "user", content: question },
         ],
         temperature: 0.7,
-        max_tokens: 1024,
+        max_tokens: 4096,
       }),
       timeout: 14000
     });
