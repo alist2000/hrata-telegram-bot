@@ -12,13 +12,26 @@
  *   - Full Q&A history in D1 SQLite
  */
 
-const SYSTEM_PROMPT = `شما یک دستیار هوش مصنوعی مودب، مفید و دقیق در تلگرام هستید.
+async function getSystemPrompt(env) {
+  let prompt = `شما یک دستیار هوش مصنوعی مودب، مفید و متخصص در تلگرام هستید.
 قوانین:
-- پاسخ‌ها را به زبان فارسی روان، کوتاه و دقیق ارائه بده. حداکثر ۲ تا ۳ بند.
-- از به کار بردن علامت‌های گیومه غیرضروری و خط فاصله طولانی خودداری کن.
-- اگر سوال نیاز به تحقیق بیشتر دارد، خلاصه‌ای بده و راهنمایی کن.
-- پاسخ محتوای نامناسب یا خطرناک را نده.
-`;
+- پاسخ‌ها را به زبان فارسی روان، طبیعی و بدون کلمات اضافه (مثل خلاصه، Summary و ...) در ابتدای متن ارائه بده.
+- اگر کاربر سوال توضیحی پرسید، می‌توانید پاسخ را جامع و در حد یک یا چند پاراگراف طولانی بنویسید (محدودیت کلمات برداشته شده است).
+- مستقیم برو سر اصل مطلب و از نشانه‌های گیومه غیرضروری و خط فاصله طولانی استفاده نکن.`;
+
+  if (env.DB) {
+    try {
+      const row = await env.DB.prepare("SELECT value FROM bot_settings WHERE key = 'course_context'").first();
+      if (row && row.value) {
+        prompt += `\n\nهمچنین، اطلاعات زیر در مورد سازنده این ربات و دوره‌های آموزشی او است:\n${row.value}\nاگر سوال کاربر به برنامه‌نویسی، آموزش یا این دوره‌ها مرتبط بود، با ظرافت این دوره‌ها را به کاربر معرفی و پیشنهاد کن.`;
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+  
+  return prompt;
+}
 
 // ═══════════════════════════════════════════════════════════
 //  ENTRY POINT
@@ -133,6 +146,29 @@ async function handleMessage(message, env) {
     // /admin: open admin panel directly
     if (text === "/admin") {
       await sendAdminPanel(env, chatId);
+      return;
+    }
+
+    if (text.startsWith("/setcontext ")) {
+      const ctxText = text.substring(12).trim();
+      await env.DB.prepare("INSERT OR REPLACE INTO bot_settings (key, value) VALUES ('course_context', ?)").bind(ctxText).run();
+      await tgSend(env, chatId, "متن کانتکست (تبلیغات/دوره‌ها) با موفقیت ذخیره شد.");
+      return;
+    }
+
+    if (text === "/getcontext") {
+      try {
+        const row = await env.DB.prepare("SELECT value FROM bot_settings WHERE key = 'course_context'").first();
+        await tgSend(env, chatId, row && row.value ? `کانتکست فعلی:\n\n${row.value}` : "هیچ کانتکستی در حال حاضر تنظیم نشده است.");
+      } catch (e) {
+        await tgSend(env, chatId, "خطا در دریافت کانتکست.");
+      }
+      return;
+    }
+
+    if (text === "/clearcontext") {
+      await env.DB.prepare("DELETE FROM bot_settings WHERE key = 'course_context'").run();
+      await tgSend(env, chatId, "کانتکست فعلی پاک شد.");
       return;
     }
 
@@ -293,6 +329,9 @@ async function handleCallback(query, env) {
     await tgAnswerCallback(env, query.id, "", false);
     await tgSend(env, chatId,
       `دستورات مدیریتی:\n\n` +
+      `/setcontext <متن>\nتنظیم کانتکست (تبلیغات/دوره‌ها) برای هوش مصنوعی\n\n` +
+      `/getcontext\nمشاهده کانتکست فعلی\n\n` +
+      `/clearcontext\nپاک کردن کانتکست\n\n` +
       `/reset <user_id>\nبازنشانی سهمیه روزانه کاربر\n\n` +
       `/setlimit <user_id> <تعداد>\nتغییر سهمیه روزانه کاربر\n\n` +
       `/addmanager @username\nافزودن مدیر جدید\n\n` +
@@ -618,10 +657,13 @@ async function askGemini(question, env) {
   // Use the latest stable model default
   const model = env.GEMINI_MODEL || "gemini-3.8-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.GEMINI_API_KEY}`;
+  
+  const systemInstructionText = await getSystemPrompt(env);
+  
   const payload = {
-    systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+    systemInstruction: { parts: [{ text: systemInstructionText }] },
     contents: [{ role: "user", parts: [{ text: question }] }],
-    generationConfig: { maxOutputTokens: 600, temperature: 0.7 },
+    generationConfig: { maxOutputTokens: 1024, temperature: 0.7 },
   };
 
   // Max 2 attempts, quick backoff to avoid Cloudflare 30s limit
@@ -666,6 +708,7 @@ async function askGemini(question, env) {
 
 async function askGrok(question, env) {
   try {
+    const systemInstructionText = await getSystemPrompt(env);
     const res = await fetchWithTimeout("https://api.x.ai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -675,11 +718,11 @@ async function askGrok(question, env) {
       body: JSON.stringify({
         model: env.GROK_MODEL || "grok-2-latest",
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: systemInstructionText },
           { role: "user", content: question },
         ],
         temperature: 0.7,
-        max_tokens: 600,
+        max_tokens: 1024,
       }),
       timeout: 14000
     });
