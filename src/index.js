@@ -414,16 +414,18 @@ async function sendUsersList(env, chatId) {
       "SELECT user_id, username, first_name, is_blocked, is_channel_member FROM users ORDER BY last_active DESC LIMIT 20"
     ).all();
     if (!results || results.length === 0) {
-      await tgSend(env, chatId, "هنوز کاربری ثبت نشده است.");
+      await tgSend(env, chatId, "هنوز هیچ کاربری ثبت نشده است.");
       return;
     }
-    let out = "لیست کاربران (حداکثر ۲۰ نفر):\n\n";
+    let out = "لیست کاربران (۲۰ نفر آخر):\n\n";
     for (const u of results) {
-      const blocked = u.is_blocked ? " [مسدود]" : "";
-      const member = u.is_channel_member ? " [عضو]" : "";
-      const name = u.first_name || u.username || String(u.user_id);
-      out += `${u.user_id} - ${name}${member}${blocked}\n`;
+      const blocked = u.is_blocked ? " 🚫" : "";
+      const member = u.is_channel_member ? " ✅" : "";
+      const name = u.first_name ? u.first_name : "بدون‌نام";
+      const username = u.username ? ` (@${u.username})` : "";
+      out += `شناسه: ${u.user_id}\nنام: ${name}${username}${member}${blocked}\n\n`;
     }
+    out += "💡 نکته: برای پیدا کردن این کاربران در تلگرام، اگر آیدی (@) دارند می‌توانید آن را در تلگرام جستجو کنید. اما اگر آیدی ندارند، متاسفانه تلگرام اجازه جستجو فقط با شماره شناسه (user_id) را نمی‌دهد. با این حال می‌توانید از این شناسه در دستورات ربات (مثل /setlimit یا /block) استفاده کنید.";
     await tgSend(env, chatId, out);
   } catch (e) {
     console.error("sendUsersList error:", e);
