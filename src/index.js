@@ -52,9 +52,9 @@ export default {
       env.DB = env.DB || env.hrata_bot_db;
       const update = await request.json();
       if (ctx && ctx.waitUntil) {
-        ctx.waitUntil(handleUpdate(update, env));
+        ctx.waitUntil(handleUpdate(update, env, ctx));
       } else {
-        await handleUpdate(update, env);
+        await handleUpdate(update, env, ctx);
       }
       return new Response("OK", { status: 200 });
     } catch (err) {
@@ -67,12 +67,12 @@ export default {
 // ═══════════════════════════════════════════════════════════
 //  UPDATE ROUTER
 // ═══════════════════════════════════════════════════════════
-async function handleUpdate(update, env) {
+async function handleUpdate(update, env, ctx) {
   try {
     if (update.callback_query) {
-      await handleCallback(update.callback_query, env);
+      await handleCallback(update.callback_query, env, ctx);
     } else if (update.message && update.message.text) {
-      await handleMessage(update.message, env);
+      await handleMessage(update.message, env, ctx);
     }
   } catch (err) {
     console.error("handleUpdate error:", err);
@@ -113,10 +113,31 @@ async function getUserDailyLimit(userId, env) {
 // ═══════════════════════════════════════════════════════════
 //  MESSAGE HANDLER
 // ═══════════════════════════════════════════════════════════
-async function handleMessage(message, env) {
+
+async function broadcastMessage(env, adminChatId, messageId, originalAdminId) {
+  try {
+    const { results } = await env.DB.prepare("SELECT user_id FROM users").all();
+    if (!results || results.length === 0) return;
+    let successCount = 0;
+    let failCount = 0;
+    for (const u of results) {
+      if (u.user_id === originalAdminId) continue; // skip the admin
+      const ok = await tgCopyMessage(env, u.user_id, adminChatId, messageId);
+      if (ok) successCount++;
+      else failCount++;
+      await new Promise(r => setTimeout(r, 50)); // rate limiting
+    }
+    await tgSend(env, adminChatId, `✅ پیام همگانی با موفقیت ارسال شد!\n\nموفق: ${successCount}\nناموفق: ${failCount}`);
+  } catch (e) {
+    console.error("broadcast error:", e);
+    await tgSend(env, adminChatId, "❌ خطا در ارسال پیام همگانی.");
+  }
+}
+
+async function handleMessage(message, env, ctx) {
   const user = message.from;
   const chatId = message.chat.id;
-  const text = message.text.trim();
+  const text = (message.text || "").trim();
 
   await upsertUser(user, env);
 
@@ -289,13 +310,21 @@ async function handleMessage(message, env) {
 // ═══════════════════════════════════════════════════════════
 //  CALLBACK HANDLER
 // ═══════════════════════════════════════════════════════════
-async function handleCallback(query, env) {
+async function handleCallback(query, env, ctx) {
   const user = query.from;
   const chatId = query.message.chat.id;
   const messageId = query.message.message_id;
   const data = query.data;
 
   // ─── Admin panel ─────────────────────────────────────
+  
+  if (data === "admin_broadcast") {
+    await tgAnswerCallback(env, query.id, "ارسال پیام همگانی", false);
+    await env.DB.prepare("INSERT OR REPLACE INTO bot_settings (key, value) VALUES (?, 'waiting')").bind('broadcast_state_' + user.id).run();
+    await tgSend(env, chatId, "📢 لطفا پیام خود را ارسال کنید (متن، عکس، ویدیو، وویس و...).\nاین پیام دقیقا به همین شکل برای همه کاربران ارسال خواهد شد.\n\nبرای لغو از دستور /cancel استفاده کنید.");
+    return;
+  }
+
   if (data === "admin_panel") {
     await tgAnswerCallback(env, query.id, "پنل مدیریت", false);
     await sendAdminPanel(env, chatId);
@@ -375,6 +404,7 @@ async function sendAdminPanel(env, chatId) {
     {
       inline_keyboard: [
         [{ text: "آمار ربات", callback_data: "admin_stats" }, { text: "لیست کاربران", callback_data: "admin_users" }],
+          [{ text: "📢 ارسال پیام همگانی", callback_data: "admin_broadcast" }],
         [{ text: "لیست مدیران", callback_data: "admin_managers" }, { text: "راهنمای دستورات", callback_data: "admin_help" }],
       ],
     }
@@ -533,7 +563,7 @@ async function handleUserStart(user, chatId, env) {
   const remaining = Math.max(0, limit - used);
 
   await tgSend(env, chatId,
-    `سلام ${user.first_name || "عزیز"} خوش آمدید.\n\nمن دستیار هوش مصنوعی شما هستم. هر سوالی دارید بپرسید.\n\nسهمیه امروز: ${remaining} از ${limit} سوال باقی‌مانده.\n\nراهنما:\n/remaining مشاهده سهمیه باقی‌مانده\n/history مشاهده سوالات اخیر\n/help راهنمای دستورات`
+    `سلام ${user.first_name || "عزیز"} خوش آمدید.\n\nمن دستیار هوش مصنوعی شما هستم (توسعه یافته توسط مهندس حمیدرضا عطااللهی). هر سوالی دارید بپرسید.\n\nسهمیه امروز: ${remaining} از ${limit} سوال باقی‌مانده.\n\nراهنما:\n/remaining مشاهده سهمیه باقی‌مانده\n/history مشاهده سوالات اخیر\n/help راهنمای دستورات`
   );
 }
 
@@ -848,6 +878,22 @@ async function getUserHistory(userId, env, limit = 5) {
 // ═══════════════════════════════════════════════════════════
 //  TELEGRAM API HELPERS
 // ═══════════════════════════════════════════════════════════
+
+async function tgCopyMessage(env, targetChatId, fromChatId, messageId) {
+  try {
+    const body = { chat_id: targetChatId, from_chat_id: fromChatId, message_id: messageId };
+    const res = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/copyMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    return data.ok;
+  } catch (err) {
+    return false;
+  }
+}
+
 async function tgSend(env, chatId, text, replyMarkup = null) {
   try {
     const body = { chat_id: chatId, text: text };
