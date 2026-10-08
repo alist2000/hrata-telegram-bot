@@ -615,8 +615,8 @@ async function askAI(question, env) {
 }
 
 async function askGemini(question, env) {
-  // Use a known stable model default
-  const model = env.GEMINI_MODEL || "gemini-1.5-flash";
+  // Use the latest stable model default
+  const model = env.GEMINI_MODEL || "gemini-3.8-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.GEMINI_API_KEY}`;
   const payload = {
     systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },

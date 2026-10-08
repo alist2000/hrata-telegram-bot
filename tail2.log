@@ -111,3 +111,430 @@
         }
     }
 }
+{
+    "wallTime": 0,
+    "cpuTime": 0,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "d2aeacaf-88c4-4edc-a271-148d8bad651a"
+    },
+    "scriptName": "hrata-telegram-bot",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1791456028780,
+    "event": {
+        "request": {
+            "url": "https://hrata-telegram-bot.hrata.workers.dev/",
+            "method": "GET",
+            "headers": {
+                "accept-encoding": "gzip, br",
+                "cf-connecting-ip": "2a06:98c0:3600::103",
+                "cf-ipcountry": "US",
+                "cf-ray": "a4748713af522522",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "cf-worker": "cfone.cfdata.org",
+                "connection": "Keep-Alive",
+                "host": "hrata-telegram-bot.hrata.workers.dev",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "2a06:98c0:3600::103"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/2",
+                "clientAcceptEncoding": "identity",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": [
+                    ":authority",
+                    ":method",
+                    ":path",
+                    ":scheme",
+                    "cf-access-client-secret",
+                    "cf-access-client-id",
+                    "content-type",
+                    "user-agent",
+                    "accept",
+                    "cookie",
+                    "content-length",
+                    "accept-encoding"
+                ],
+                "clientTcpRtt": 0,
+                "clientQuicRtt": 0,
+                "colo": "SJC",
+                "asn": 13335,
+                "asOrganization": "Cloudflare, Inc.",
+                "country": "US",
+                "isEUCountry": false,
+                "city": "Portland",
+                "continent": "NA",
+                "region": "Oregon",
+                "regionCode": "OR",
+                "timezone": "America/Los_Angeles",
+                "longitude": "-122.67621",
+                "latitude": "45.52345",
+                "postalCode": "97204",
+                "metroCode": "820",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "",
+                "tlsClientRandom": "",
+                "tlsClientCiphersSha1": "",
+                "tlsClientExtensionsSha1": "",
+                "tlsClientExtensionsSha1Le": "",
+                "tlsClientHelloLength": "0",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": ""
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 699,
+    "cpuTime": 8,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "d2aeacaf-88c4-4edc-a271-148d8bad651a"
+    },
+    "scriptName": "hrata-telegram-bot",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1791456193011,
+    "event": {
+        "request": {
+            "url": "https://hrata-telegram-bot.hrata.workers.dev/",
+            "method": "POST",
+            "headers": {
+                "accept-encoding": "gzip, br",
+                "cf-connecting-ip": "91.108.5.142",
+                "cf-ipcountry": "NL",
+                "cf-ray": "a4748b15ea33634c",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "content-length": "378",
+                "content-type": "application/json",
+                "host": "hrata-telegram-bot.hrata.workers.dev",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "91.108.5.142"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "clientAcceptEncoding": "gzip, deflate",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": [
+                    "Host",
+                    "Content-Type",
+                    "Content-Length",
+                    "Connection",
+                    "Accept-Encoding"
+                ],
+                "clientTcpRtt": 7,
+                "clientQuicRtt": 0,
+                "colo": "LHR",
+                "asn": 62041,
+                "asOrganization": "Telegram Messenger Network",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Amsterdam",
+                "continent": "EU",
+                "region": "North Holland",
+                "regionCode": "NH",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "4.88969",
+                "latitude": "52.37403",
+                "postalCode": "1012",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-AES256-GCM-SHA384",
+                "tlsClientRandom": "E6EprlXy+DFO4BQ0i2cpfVUnv1xAMRipM2Jbp/3kqCY=",
+                "tlsClientCiphersSha1": "hCCNuWP9ky6AR69i97wdKYbhFQo=",
+                "tlsClientExtensionsSha1": "M5Sm/2qrabCxy8tG1NIWsjf99Ug=",
+                "tlsClientExtensionsSha1Le": "C6UcGP66kPwR41Cyi/I/iPOzh/Q=",
+                "tlsExportedAuthenticator": {
+                    "clientHandshake": "efacc8095580dc135e756c66e946489bf43e07ac9b3f69a8268ebd19941cd50000996bbf413cc14217128cdac1a67af8",
+                    "serverHandshake": "bb5a7f73508af8cdd9e50a14a4f5526c1942e9d1870d405b031706ac008f2012d8e421c16f4236c9daeb4f11be95f926",
+                    "clientFinished": "fe7b8a68909bb210a801ff9e9dcb360d63efae4a89599d4ae146886a615f6060c777e454cceef6d4ace9a85d8306e991",
+                    "serverFinished": "471ce097e7a4327f2be2c6c512dce074fb49dac77ddfeae8bc9c2da142da19a6b4e63bcb881e14f29ed8a60e5768c3c9"
+                },
+                "tlsClientHelloLength": "338",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 637590
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 360,
+    "cpuTime": 8,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "d2aeacaf-88c4-4edc-a271-148d8bad651a"
+    },
+    "scriptName": "hrata-telegram-bot",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1791456195969,
+    "event": {
+        "request": {
+            "url": "https://hrata-telegram-bot.hrata.workers.dev/",
+            "method": "POST",
+            "headers": {
+                "accept-encoding": "gzip, br",
+                "cf-connecting-ip": "91.108.5.142",
+                "cf-ipcountry": "NL",
+                "cf-ray": "a4748b288bd3634c",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "content-length": "1023",
+                "content-type": "application/json",
+                "host": "hrata-telegram-bot.hrata.workers.dev",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "91.108.5.142"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "clientAcceptEncoding": "gzip, deflate",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": [
+                    "Host",
+                    "Content-Type",
+                    "Content-Length",
+                    "Connection",
+                    "Accept-Encoding"
+                ],
+                "clientTcpRtt": 13,
+                "clientQuicRtt": 0,
+                "colo": "LHR",
+                "asn": 62041,
+                "asOrganization": "Telegram Messenger Network",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Amsterdam",
+                "continent": "EU",
+                "region": "North Holland",
+                "regionCode": "NH",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "4.88969",
+                "latitude": "52.37403",
+                "postalCode": "1012",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-AES256-GCM-SHA384",
+                "tlsClientRandom": "E6EprlXy+DFO4BQ0i2cpfVUnv1xAMRipM2Jbp/3kqCY=",
+                "tlsClientCiphersSha1": "hCCNuWP9ky6AR69i97wdKYbhFQo=",
+                "tlsClientExtensionsSha1": "M5Sm/2qrabCxy8tG1NIWsjf99Ug=",
+                "tlsClientExtensionsSha1Le": "C6UcGP66kPwR41Cyi/I/iPOzh/Q=",
+                "tlsExportedAuthenticator": {
+                    "clientHandshake": "efacc8095580dc135e756c66e946489bf43e07ac9b3f69a8268ebd19941cd50000996bbf413cc14217128cdac1a67af8",
+                    "serverHandshake": "bb5a7f73508af8cdd9e50a14a4f5526c1942e9d1870d405b031706ac008f2012d8e421c16f4236c9daeb4f11be95f926",
+                    "clientFinished": "fe7b8a68909bb210a801ff9e9dcb360d63efae4a89599d4ae146886a615f6060c777e454cceef6d4ace9a85d8306e991",
+                    "serverFinished": "471ce097e7a4327f2be2c6c512dce074fb49dac77ddfeae8bc9c2da142da19a6b4e63bcb881e14f29ed8a60e5768c3c9"
+                },
+                "tlsClientHelloLength": "338",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 637590
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
+{
+    "wallTime": 1026,
+    "cpuTime": 14,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "d2aeacaf-88c4-4edc-a271-148d8bad651a"
+    },
+    "scriptName": "hrata-telegram-bot",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [
+        {
+            "message": [
+                "Gemini attempt 1 error:",
+                "{\"code\":404,\"message\":\"models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.\",\"status\":\"NOT_FOUND\"}"
+            ],
+            "level": "error",
+            "timestamp": 1791456197980
+        }
+    ],
+    "eventTimestamp": 1791456197541,
+    "event": {
+        "request": {
+            "url": "https://hrata-telegram-bot.hrata.workers.dev/",
+            "method": "POST",
+            "headers": {
+                "accept-encoding": "gzip, br",
+                "cf-connecting-ip": "91.108.5.142",
+                "cf-ipcountry": "NL",
+                "cf-ray": "a4748b326e5c634c",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "content-length": "338",
+                "content-type": "application/json",
+                "host": "hrata-telegram-bot.hrata.workers.dev",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "91.108.5.142"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "clientAcceptEncoding": "gzip, deflate",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": [
+                    "Host",
+                    "Content-Type",
+                    "Content-Length",
+                    "Connection",
+                    "Accept-Encoding"
+                ],
+                "clientTcpRtt": 12,
+                "clientQuicRtt": 0,
+                "colo": "LHR",
+                "asn": 62041,
+                "asOrganization": "Telegram Messenger Network",
+                "country": "NL",
+                "isEUCountry": "1",
+                "city": "Amsterdam",
+                "continent": "EU",
+                "region": "North Holland",
+                "regionCode": "NH",
+                "timezone": "Europe/Amsterdam",
+                "longitude": "4.88969",
+                "latitude": "52.37403",
+                "postalCode": "1012",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-AES256-GCM-SHA384",
+                "tlsClientRandom": "E6EprlXy+DFO4BQ0i2cpfVUnv1xAMRipM2Jbp/3kqCY=",
+                "tlsClientCiphersSha1": "hCCNuWP9ky6AR69i97wdKYbhFQo=",
+                "tlsClientExtensionsSha1": "M5Sm/2qrabCxy8tG1NIWsjf99Ug=",
+                "tlsClientExtensionsSha1Le": "C6UcGP66kPwR41Cyi/I/iPOzh/Q=",
+                "tlsExportedAuthenticator": {
+                    "clientHandshake": "efacc8095580dc135e756c66e946489bf43e07ac9b3f69a8268ebd19941cd50000996bbf413cc14217128cdac1a67af8",
+                    "serverHandshake": "bb5a7f73508af8cdd9e50a14a4f5526c1942e9d1870d405b031706ac008f2012d8e421c16f4236c9daeb4f11be95f926",
+                    "clientFinished": "fe7b8a68909bb210a801ff9e9dcb360d63efae4a89599d4ae146886a615f6060c777e454cceef6d4ace9a85d8306e991",
+                    "serverFinished": "471ce097e7a4327f2be2c6c512dce074fb49dac77ddfeae8bc9c2da142da19a6b4e63bcb881e14f29ed8a60e5768c3c9"
+                },
+                "tlsClientHelloLength": "338",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 637590
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}
