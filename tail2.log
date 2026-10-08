@@ -1,0 +1,113 @@
+{
+    "wallTime": 6007,
+    "cpuTime": 9,
+    "truncated": false,
+    "executionModel": "stateless",
+    "outcome": "ok",
+    "scriptVersion": {
+        "id": "e0033777-0f77-4e51-a591-68c7e1ca766e"
+    },
+    "scriptName": "hrata-telegram-bot",
+    "diagnosticsChannelEvents": [],
+    "exceptions": [],
+    "logs": [],
+    "eventTimestamp": 1791455931630,
+    "event": {
+        "request": {
+            "url": "https://hrata-telegram-bot.hrata.workers.dev/",
+            "method": "POST",
+            "headers": {
+                "accept": "*/*",
+                "accept-encoding": "gzip, br",
+                "accept-language": "*",
+                "cf-connecting-ip": "31.171.100.113",
+                "cf-ipcountry": "AZ",
+                "cf-ray": "a47484b4ac04cd3b",
+                "cf-visitor": "{\"scheme\":\"https\"}",
+                "connection": "Keep-Alive",
+                "content-length": "217",
+                "content-type": "application/json",
+                "host": "hrata-telegram-bot.hrata.workers.dev",
+                "sec-fetch-mode": "cors",
+                "user-agent": "node",
+                "x-forwarded-proto": "https",
+                "x-real-ip": "31.171.100.113"
+            },
+            "cf": {
+                "httpProtocol": "HTTP/1.1",
+                "clientAcceptEncoding": "gzip, deflate, br",
+                "requestPriority": "",
+                "edgeRequestKeepAliveStatus": 1,
+                "requestHeaderNames": [
+                    "host",
+                    "connection",
+                    "Content-Type",
+                    "accept",
+                    "accept-language",
+                    "sec-fetch-mode",
+                    "user-agent",
+                    "accept-encoding",
+                    "content-length"
+                ],
+                "clientTcpRtt": 99,
+                "clientQuicRtt": 0,
+                "colo": "SOF",
+                "asn": 29049,
+                "asOrganization": "Leased IPv4 Blocks",
+                "country": "AZ",
+                "isEUCountry": false,
+                "city": "Baku",
+                "continent": "AS",
+                "region": "Baki",
+                "regionCode": "BA",
+                "timezone": "Asia/Baku",
+                "longitude": "49.89201",
+                "latitude": "40.37767",
+                "postalCode": "AZ 1000",
+                "tlsVersion": "TLSv1.3",
+                "tlsCipher": "AEAD-AES256-GCM-SHA384",
+                "tlsClientRandom": "5xw++uTylsDQN/5vHRIZYlPBoU3r1+o9yRaXGYmfrPA=",
+                "tlsClientCiphersSha1": "kXrN3VEKDdzz2cPKTQaKzpxVTxQ=",
+                "tlsClientExtensionsSha1": "1eY97BUYYO8vDaTfHQywB1pcNdM=",
+                "tlsClientExtensionsSha1Le": "u4wtEMFQBY18l3BzHAvORm+KGRw=",
+                "tlsExportedAuthenticator": {
+                    "clientHandshake": "1446bda472f80c3e463eb0968b4e9a59bb52602690b1070953a3b53f3ca485896078dc1de899925d5d3b903684526e08",
+                    "serverHandshake": "b3a8c9619f40279f0dadd102bfc01d6965576e9835f26334e69328e88d731569b423f1ba66d463a4618b9f3add0d7898",
+                    "clientFinished": "ebc849950718223e0350de3678fa5b65c98af324f6818fd012d989260d82557f37a34ea3953ae718a36bee3302d0f5ce",
+                    "serverFinished": "c807b4404154335ed5692c38f1e8a16f635a1934925058e6826d04aec96daeee644202071613b0afcc603883285efbbe"
+                },
+                "tlsClientHelloLength": "1619",
+                "tlsClientAuth": {
+                    "certPresented": "0",
+                    "certVerified": "NONE",
+                    "certRevoked": "0",
+                    "certIssuerDN": "",
+                    "certSubjectDN": "",
+                    "certIssuerDNRFC2253": "",
+                    "certSubjectDNRFC2253": "",
+                    "certIssuerDNLegacy": "",
+                    "certSubjectDNLegacy": "",
+                    "certSerial": "",
+                    "certIssuerSerial": "",
+                    "certSKI": "",
+                    "certIssuerSKI": "",
+                    "certFingerprintSHA1": "",
+                    "certFingerprintSHA256": "",
+                    "certNotBefore": "",
+                    "certNotAfter": "",
+                    "certRFC9440": "",
+                    "certRFC9440TooLarge": false,
+                    "certChainRFC9440": "",
+                    "certChainRFC9440TooLarge": false
+                },
+                "verifiedBotCategory": "",
+                "edgeL4": {
+                    "deliveryRate": 58660
+                }
+            }
+        },
+        "response": {
+            "status": 200
+        }
+    }
+}

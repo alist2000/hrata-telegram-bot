@@ -581,7 +581,7 @@ async function handleQuestion(user, chatId, text, env) {
 //  AI PROVIDERS (with timeout & fallback)
 // ═══════════════════════════════════════════════════════════
 async function fetchWithTimeout(url, options = {}) {
-  const { timeout = 8000 } = options; // 8 seconds default timeout
+  const { timeout = 14000 } = options; // 14 seconds default timeout
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   try {
@@ -615,7 +615,8 @@ async function askAI(question, env) {
 }
 
 async function askGemini(question, env) {
-  const model = env.GEMINI_MODEL || "gemini-3.8-flash";
+  // Use a known stable model default
+  const model = env.GEMINI_MODEL || "gemini-1.5-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.GEMINI_API_KEY}`;
   const payload = {
     systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
@@ -630,7 +631,7 @@ async function askGemini(question, env) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-        timeout: 8000
+        timeout: 14000
       });
 
       const data = await res.json();
@@ -645,6 +646,10 @@ async function askGemini(question, env) {
         if ((data.error.code === 503 || data.error.code === 429) && attempt === 1) {
           await sleep(500); // Only sleep 0.5s
           continue;
+        }
+        // If it's a 400 (Bad Request), 403 (Invalid API Key), or 404 (Model Not Found), return the exact error
+        if (data.error.code === 400 || data.error.code === 403 || data.error.code === 404) {
+           return `خطای پیکربندی هوش مصنوعی (${data.error.code}): ${data.error.message}\n\nلطفا API Key یا نام مدل را بررسی کنید.`;
         }
       }
     } catch (err) {
@@ -676,7 +681,7 @@ async function askGrok(question, env) {
         temperature: 0.7,
         max_tokens: 600,
       }),
-      timeout: 8000
+      timeout: 14000
     });
     const data = await res.json();
     if (data.choices && data.choices[0]?.message?.content) {
